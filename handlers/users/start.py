@@ -20,8 +20,8 @@ async def bot_start(message: types.Message):
         name = message.from_user.first_name
 
         # Userni ro'yxatga olish
-        url_post = os.getenv('API_BOT_USER')
-        url_get = os.getenv('API_BOT_USER_INFO')
+        url_post = os.getenv('CREATE_USER')
+        url_get = os.getenv('USER_INFO')
         check_user = requests.get(f'{url_get}{user_id}')
 
         if check_user.status_code != 200:
@@ -65,9 +65,12 @@ async def checker(call: types.CallbackQuery):
         if all_subscribed:
             # Foydalanuvchi uchun asosiy klaviatura
             main_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            btn_test_yechish = KeyboardButton("Test Yechish")
-            btn_yonalish = KeyboardButton("Yo'nalishlar")
-            main_keyboard.add(btn_test_yechish, btn_yonalish)
+            btn_test_yechish = KeyboardButton("✍️ Test Yechish")
+            btn_yonalish = KeyboardButton("👨‍🎓 Yo'nalishlar")
+            btn_kvotalar = KeyboardButton("📌 Kvotalar")
+            btn_admin = KeyboardButton("🙎‍♂️ Admin")
+            btn_savol_yuborish = KeyboardButton("💬 Savol Yuborish")
+            main_keyboard.add(btn_test_yechish, btn_yonalish, btn_kvotalar, btn_admin, btn_savol_yuborish)
 
             await call.message.answer(
                 "Rahmat! Siz barcha kanallarga obuna bo'lgansiz. Botdan to'liq foydalanishingiz mumkin.",
