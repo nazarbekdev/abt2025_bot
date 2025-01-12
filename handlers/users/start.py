@@ -68,7 +68,7 @@ async def bot_start(message: types.Message):
                 print('yangi user code: ', res.status_code)
                 if res.status_code == 200:
                     # Agar yangi foydalanuvchi muvaffaqiyatli ro'yxatdan o'tgan bo'lsa, taklif qiluvchiga bonus beramiz
-                    balans = inviter_data.get('balans', 0) + 1000
+                    balans = inviter_data.get('balans', 0) + 550
                     requests.patch(f'{url_patch}{inviter_id}', data={'balans': balans})
 
                     await message.answer("Siz muvaffaqiyatli ro'yxatdan o'tdingiz!")

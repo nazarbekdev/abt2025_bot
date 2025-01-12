@@ -10,7 +10,7 @@ async def dostlarni_taklif_qilish(message: Message):
     await message.answer("""
 🔥 💰 BONUS OLISH IMKONIYATI! 🔥
 
-Do'stlaringizni taklif qiling va har bir tashrif buyurgan do'stingiz uchun 1000 so'm bonus yutib oling! 💵
+Do'stlaringizni taklif qiling va har bir tashrif buyurgan do'stingiz uchun 550 so'm bonus yutib oling! 💵
 ✨ Sizning yutug‘ingiz cheklanmagan – qancha ko‘p taklif qilsangiz, shuncha ko‘p bonus yig‘asiz! 🚀
 🎯 Do'stlarni taklif qilish uchun ushbu referal havolani ulashing va bonuslaringizni yig‘ishni boshlang!   
     """, reply_markup=taklif_qilish(referal_link))

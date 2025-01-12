@@ -104,7 +104,7 @@ async def confirm_order(message: types.Message, state: FSMContext):
         summa = kitobcha_soni * 2900
 
         await message.answer(
-            f"🔎 Buyurtma ma'lumotlari:\n"
+            f"🔖 Buyurtma ma'lumotlari:\n\n"
             f"📖 Soha: {soha}\n"
             f"🌐 Til: {til}\n"
             f"📚 Baza: {baza}\n"
