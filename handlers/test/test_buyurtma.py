@@ -1,9 +1,10 @@
 import os
+import io
 
 import requests
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from loader import dp
+from loader import dp, bot
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from dotenv import load_dotenv
 from keyboards.inline.fanlar import (
@@ -12,7 +13,9 @@ from keyboards.inline.fanlar import (
     baza_inline_keyboard,
     tasdiqlash_inline_keyboard,
 )
+
 load_dotenv()
+ADMIN_ID = os.getenv('ADMINS')
 
 # Sohalar, tillar va bazalar uchun lug'atlar
 SOHALAR = {
@@ -94,10 +97,12 @@ async def confirm_order(message: types.Message, state: FSMContext):
         await state.update_data(kitobcha_soni=kitobcha_soni)
         data = await state.get_data()
 
+
         soha = SOHALAR.get(data.get("soha"), "Noma'lum")
         til = TILLAR.get(data.get("til"), "Noma'lum")
         baza = BAZALAR.get(data.get("baza"), "Noma'lum")
         summa = kitobcha_soni * 2900
+
         await message.answer(
             f"🔎 Buyurtma ma'lumotlari:\n"
             f"📖 Soha: {soha}\n"
@@ -120,11 +125,13 @@ async def finalize_order(call: types.CallbackQuery, state: FSMContext):
         url_user_info = os.getenv('USER_INFO')
         url_user_patch = os.getenv('USER_PATCH')
         req_info = requests.get(f'{url_user_info}{call.from_user.id}')
+
         if req_info.status_code == 200:
             balance = req_info.json()['balans']
+            order = req_info.json()['order']
             is_correct = int(balance) - int(data['kitobcha_soni'] * 2900)
         else:
-            await call.message.answer(f"Ma'lumotlaringizni olishda muammo bo'ldi🤔")
+            await call.message.answer(f"Ma'lumotlaringizni olishda muammo bo'ldi 🤔")
         if is_correct > 0:
             get_data = {
               "number_books": data['kitobcha_soni'],
@@ -134,18 +141,49 @@ async def finalize_order(call: types.CallbackQuery, state: FSMContext):
               "language": data['til'],
               "user": 12
             }
-            await call.message.edit_text(f"✅ Buyurtma tasdiqlandi!")
+            success_order = await call.message.edit_text(f"✅ Buyurtma tasdiqlandi!")
             url = os.getenv("TEST_BUYURTMA_POST")
             req = requests.post(url, data=get_data)
 
             if req.status_code == 200:
-                req_patch = requests.patch(f'{url_user_patch}{call.from_user.id}', data={'balans': is_correct})
-                await call.message.answer(req_patch.status_code)
-                await call.message.answer("Test tayyor")
+                req_patch = requests.patch(f'{url_user_patch}{call.from_user.id}', data={'balans': is_correct, 'order': order+1})
+                if req_patch.status_code == 200:
+                    success = await call.message.answer("Test tayyor")
+                    url_file = os.getenv("TEST_DOWNLOAD_GET")
+                    req_file = requests.get(url_file)
+                    data = await state.get_data()
+
+                    soha = SOHALAR.get(data.get("soha"), "Noma'lum")
+                    if req_file.status_code == 200:
+                        file_content = req_file.content
+                        file_name = f"{soha}.pdf"
+
+                        # Faylni yuborish
+                        await bot.send_document(
+                            chat_id=call.from_user.id,
+                            document=types.InputFile(io.BytesIO(file_content), filename=file_name),
+                            caption="❗️Diqqat. 3 soat vaqt belgilang va testni boshlang!\n\n© 2024 TestifyHub")
+                        titul_path = os.getenv("TITUL_PATH")
+
+                        if os.path.exists(titul_path):
+                            await bot.send_document(
+                                chat_id=call.from_user.id,
+                                document=types.InputFile(titul_path),
+                                caption="📄 Javoblarni belgilash uchun!"
+                            )
+                            await success_order.delete()
+                            await success.delete()
+                        else:
+                            await call.message.answer("Titul fayli topilmadi 🤔")
+                    else:
+                        await call.message.answer("Server is not running!")
+                else:
+                    await call.message.answer("Nimadur xato bo'ldi 🤔")
             else:
-                await call.message.answer("Xatolik")
+                await call.message.reply("Qandaydir xatolik yuz berdi!\n🎟️ Buyurtmangiz ko'rib chiqish uchun yuborildi.")
+                await bot.send_message(ADMIN_ID, f'❌❌❌❌❌❌❌\n\nFoydalanuvchi: {call.from_user.id}\n\n{get_data}\n\nUshbu buyurtma bajarilmadi!', )
         else:
-            await call.message.answer("Balansingizda yetarlicha mablag' mavjud emas!\nHisobingizni to'lding va davom eting.\nTalabalik sari olg'a🎓📚✨")
+            await call.message.answer("Balansingizda yetarlicha mablag' mavjud emas!\nHisobingizni to'lding va davom eting!\nTalabalik sari olg'a🎓📚✨")
         await state.finish()
     elif call.data == "bekor":
         await call.message.edit_text("❌ Buyurtma bekor qilindi.")
