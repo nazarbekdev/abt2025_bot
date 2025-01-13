@@ -99,5 +99,5 @@ async def show_direction(callback_query: types.CallbackQuery):
     yn_data = req.json()["data"]
     await callback_query.message.answer(f"{direction_name}\nNatijalar: {len(yn_data)} 👇")
     for data in yn_data:
-        desc = f"""♦️ Kod: {data['yonalish_kodi']}\n♦️ Yo'nalish: {data['yonalish_nomi']}\n\n"""
-        await callback_query.message.answer(desc)
+        desc = f"""🔹 Kod: <b><i>{data['yonalish_kodi']}</i></b>\n🔸 Yo'nalish: <b><i>{data['yonalish_nomi']}</i></b>\n_______________________"""
+        await callback_query.message.answer(desc, parse_mode='HTML')

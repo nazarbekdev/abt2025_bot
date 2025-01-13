@@ -49,11 +49,10 @@ async def bot_start(message: types.Message):
 
         # Agar args mavjud bo'lsa (taklif qiluvchi foydalanuvchi ID si)
         inviter_id = int(args) if args else None
-        print(inviter_id)
+
         if inviter_id:
             # Taklif qiluvchi foydalanuvchi mavjudligini tekshiramiz
             inviter_user = requests.get(f'{url_get}{inviter_id}')
-            print('inviter code: ', inviter_user.status_code)
             if inviter_user.status_code == 200:
                 inviter_data = inviter_user.json()
 
@@ -65,12 +64,12 @@ async def bot_start(message: types.Message):
                     'referral_link': referral_link,
                     'invited_by': inviter_data['id']
                 })
-                print('yangi user code: ', res.status_code)
+
                 if res.status_code == 200:
                     # Agar yangi foydalanuvchi muvaffaqiyatli ro'yxatdan o'tgan bo'lsa, taklif qiluvchiga bonus beramiz
                     balans = inviter_data.get('balans', 0) + 550
                     requests.patch(f'{url_patch}{inviter_id}', data={'balans': balans})
-
+                    await bot.send_message(inviter_id, "⚡️ Sizga +550 so'm bonus berildi!")
                     await message.answer("Siz muvaffaqiyatli ro'yxatdan o'tdingiz!")
 
             else:
@@ -97,7 +96,7 @@ async def bot_start(message: types.Message):
             channels_format += f"✅ <a href='{invite_link}'>{chat.title}</a>\n"
 
         await message.answer(
-            f"Assalomu alaykum, {message.from_user.full_name}!\nBotdan foydalanish uchun, quyidagi kanallarga obuna bo'ling:\n\n{channels_format}\n\nSizning referalingiz: {referral_link}",
+            f"Assalomu alaykum, {message.from_user.full_name}!\nBotdan foydalanish uchun, quyidagi kanallarga obuna bo'ling:\n\n{channels_format}",
             reply_markup=check_button,
             disable_web_page_preview=True
         )

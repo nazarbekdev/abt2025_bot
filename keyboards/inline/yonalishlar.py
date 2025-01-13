@@ -75,4 +75,3 @@ def generate_keyboard(current_page: int = 0):
         keyboard.row(*navigation_buttons)
 
     return keyboard
-

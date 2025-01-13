@@ -183,7 +183,8 @@ async def finalize_order(call: types.CallbackQuery, state: FSMContext):
                 await call.message.reply("Qandaydir xatolik yuz berdi!\n🎟️ Buyurtmangiz ko'rib chiqish uchun yuborildi.")
                 await bot.send_message(ADMIN_ID, f'❌❌❌❌❌❌❌\n\nFoydalanuvchi: {call.from_user.id}\n\n{get_data}\n\nUshbu buyurtma bajarilmadi!', )
         else:
-            await call.message.answer("Balansingizda yetarlicha mablag' mavjud emas!\nHisobingizni to'lding va davom eting!\nTalabalik sari olg'a🎓📚✨")
+            await call.message.answer("😔 Balansingizda yetarlicha mablag' mavjud emas!\n🔕 Tanaffusni unuting! Hisobingizni to‘ldiring va davom eting!")
+            await call.message.answer("Siz albatta talaba bo'lasiz 😊")
         await state.finish()
     elif call.data == "bekor":
         await call.message.edit_text("❌ Buyurtma bekor qilindi.")
