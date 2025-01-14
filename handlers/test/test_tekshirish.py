@@ -1,3 +1,4 @@
+import asyncio
 import time
 import ast
 import aiohttp
@@ -13,11 +14,14 @@ from keyboards.inline import tekshirish_usullari
 
 @dp.message_handler(lambda message: message.text == "✅ Test Tekshirish")
 async def test_tekshirish(message: Message):
-    await message.answer("Qaysi usulda tekshirmoqchisiz?", reply_markup=tekshirish_usullari.tekshirish_usullari())
+    msg = await message.answer("Qaysi usulda tekshirmoqchisiz?", reply_markup=tekshirish_usullari.tekshirish_usullari())
+    await asyncio.sleep(7)
+    await msg.delete()
 
 
 @dp.callback_query_handler(lambda call: call.data == "titul")
 async def tekshirish_titul(call: CallbackQuery):
+    await call.message.edit_reply_markup(reply_markup=None)
     await call.message.answer("📸 Titul varaqangizni rasmga olib yuboring!\n\n❗️Natijangiz to'g'ri tekshirilishi uchun titulni rasmga olish qoidalariga amal qiling!")
     await call.answer()
 
@@ -105,6 +109,7 @@ class Form(StatesGroup):
 
 @dp.callback_query_handler(lambda call: call.data == "oddiy")
 async def tekshirish_oddiy(call: CallbackQuery):
+    await call.message.edit_reply_markup(reply_markup=None)
     await call.message.answer("❗️ Javoblarni ushbu formatda jo'nating 👇")
     await call.message.answer("1234567*abcdabcdab...cd")
     await Form.tekshirish_oddiy.set()  # Holatni o'rnatamiz
@@ -117,14 +122,12 @@ async def tekshirish(message: Message, state: FSMContext):
     user_msg = message.text
     book_id = user_msg.split('*')[0]
     user_keys = user_msg.split('*')[1].upper()
-    if len(book_id) == 7:
-        pass
-    else:
+    if len(book_id) != 7:
         await message.answer('Kitob ID 7 xonadan iborat bo\'lishi kerak!')
-    if len(user_keys) == 90:
-        pass
-    else:
+        await state.finish()
+    if len(user_keys) != 90:
         await message.answer('Javoblar kaliti 90 tadan iborat bo\'lishi kerak!')
+        await state.finish()
 
     url_ans_data = os.getenv("ANSWER_DATA")
     data = requests.get(f'{url_ans_data}{book_id}')
