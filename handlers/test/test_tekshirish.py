@@ -120,6 +120,7 @@ async def tekshirish_oddiy(call: CallbackQuery):
 @dp.message_handler(state=Form.tekshirish_oddiy)
 async def tekshirish(message: Message, state: FSMContext):
     user_msg = message.text
+
     if '*' in user_msg:
         book_id = user_msg.split('*')[0]
         user_keys = user_msg.split('*')[1].upper()
