@@ -120,8 +120,11 @@ async def tekshirish_oddiy(call: CallbackQuery):
 @dp.message_handler(state=Form.tekshirish_oddiy)
 async def tekshirish(message: Message, state: FSMContext):
     user_msg = message.text
-    book_id = user_msg.split('*')[0]
-    user_keys = user_msg.split('*')[1].upper()
+    if '*' in user_msg:
+        book_id = user_msg.split('*')[0]
+        user_keys = user_msg.split('*')[1].upper()
+    else:
+        await message.answer("Iltimos, namunadagidek formatda jo'nating!!!")
     if len(book_id) != 7:
         await message.answer('Kitob ID 7 xonadan iborat bo\'lishi kerak!')
         await state.finish()
