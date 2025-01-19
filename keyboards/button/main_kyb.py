@@ -4,6 +4,9 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 def main_keyboard():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 
+    #Blok test
+    keyboard.add(KeyboardButton("📋 Blok test"))
+
     # Birinchi qator
     keyboard.add(KeyboardButton("✍️ Test Yechish"), KeyboardButton("🧑‍🎓 Yo'nalishlar"))
 
