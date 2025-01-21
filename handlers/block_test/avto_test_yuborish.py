@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, time
 import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from loader import dp, bot
+from apscheduler.triggers.cron import CronTrigger
+from loader import bot
 from aiogram.types import ParseMode
 
 # API URL
@@ -14,13 +15,13 @@ scheduler = AsyncIOScheduler()
 # Avtomatik xabar yuboruvchi funksiya
 async def send_message_user(telegram_id, message):
     try:
-        await bot.send_message(chat_id=telegram_id, text=message)
+        await bot.send_message(chat_id=telegram_id, text=message, parse_mode=ParseMode.HTML)
     except Exception as e:
         print(f"Xatolik yuz berdi: {e}")
 
 
 # API ma'lumotlarini olish va xabarlarni rejalashtirish
-def schedule_notifications():
+async def schedule_notifications():
     try:
         response = requests.get(API_URL)
         response.raise_for_status()
@@ -46,22 +47,22 @@ def schedule_notifications():
                 current_date = datetime.now().strftime("%Y-%m-%d")
                 full_datetime = datetime.strptime(f"{current_date} {start_time}", "%Y-%m-%d %H:%M")
 
-                # Xabarni rejalashtirish
-                scheduler.add_job(send_message_user, 'date', run_date=full_datetime, args=[telegram_id, message])
+                # Foydalanuvchiga xabarni rejalashtirish
+                scheduler.add_job(
+                    send_message_user,
+                    'date',
+                    run_date=full_datetime,
+                    args=[telegram_id, message]
+                )
 
     except requests.exceptions.RequestException as e:
         print(f"API bilan bog'liq xatolik: {e}")
 
 
-# Botni ishga tushirish va schedulerni boshlash
-async def on_startup(dispatcher):
-    # Xabarlarni rejalashtirish
-    schedule_notifications()
-    # Schedulerni boshlash
-    scheduler.start()
+# Har yakshanba va belgilangan vaqtlarda rejalashtirish
+def setup_scheduled_notifications():
+    trigger = CronTrigger(day_of_week='sun', hour=8, minute=0)
+    scheduler.add_job(schedule_notifications, trigger)
 
-
-if __name__ == "__main__":
-    from aiogram import executor
-
-    executor.start_polling(dp, on_startup=on_startup)
+    for hour in [8, 10, 14, 18, 20]:
+        scheduler.add_job(schedule_notifications, CronTrigger(day_of_week='sun', hour=hour, minute=0))

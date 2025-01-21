@@ -4,6 +4,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from datetime import timedelta, datetime
 from dotenv import load_dotenv
+
+from keyboards.button.blok_test import blok_test_keyboard
+from keyboards.button.test_tekshir_ortga_qaytish import ortga_qaytish
 from loader import dp
 from keyboards.button.main_kyb import main_keyboard
 import os
@@ -74,27 +77,32 @@ async def register_start(message: types.Message):
                 await message.answer(f"Siz  {user_date}  blok test uchun ro'yxatdan o'tgansiz 😊")
         if status_date:
             await RegistrationStates.ism_familiya.set()
-            await message.answer("Ism va familiyangizni kiriting", reply_markup=types.ReplyKeyboardRemove())
+            await message.answer("Ism va familiyangizni kiriting", reply_markup=ortga_qaytish())
     else:
         await RegistrationStates.ism_familiya.set()
-        await message.answer("Ism va familiyangizni kiriting", reply_markup=types.ReplyKeyboardRemove())
+        await message.answer("Ism va familiyangizni kiriting", reply_markup=ortga_qaytish())
 
 
 @dp.message_handler(state=RegistrationStates.ism_familiya)
 async def get_name(message: types.Message, state: FSMContext):
-    await state.update_data(ism_familiya=message.text)
-    await RegistrationStates.telefon_raqam.set()
+    if message.text == '🔙 Ortga Qaytish':
+        await message.answer("Blok test bo'limidasiz", reply_markup=blok_test_keyboard())
+        await state.finish()
+        return
+    else:
+        await state.update_data(ism_familiya=message.text)
+        await RegistrationStates.telefon_raqam.set()
 
-    # Telefon raqami tugmasi
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    button = KeyboardButton(text="📲 Telefon raqamingizni yuboring", request_contact=True)
-    keyboard.add(button)
+        # Telefon raqami tugmasi
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        button = KeyboardButton(text="📲 Telefon raqamingizni yuboring", request_contact=True)
+        keyboard.add(button)
 
-    # Telefon raqami so'rovi
-    await message.answer(
-        "Telefon raqamingizni kiriting: (+998 XX XXX XX XX) yoki quyidagi tugma orqali yuboring.",
-        reply_markup=keyboard
-    )
+        # Telefon raqami so'rovi
+        await message.answer(
+            "Telefon raqamingizni kiriting: (+998 XX XXX XX XX) yoki quyidagi tugma orqali yuboring.",
+            reply_markup=keyboard
+        )
 
 
 @dp.message_handler(content_types=[ContentType.TEXT, ContentType.CONTACT], state=RegistrationStates.telefon_raqam)

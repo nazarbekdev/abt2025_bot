@@ -2,8 +2,11 @@ import ast
 import os
 import requests
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import state
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message
+from keyboards.button.blok_test import blok_test_keyboard
+from keyboards.button.test_tekshir_ortga_qaytish import ortga_qaytish
 from loader import dp
 
 
@@ -14,7 +17,7 @@ class FormTekshir(StatesGroup):
 @dp.message_handler(lambda message: message.text == "📝 Testni tekshirish")
 async def tekshirish_(message: Message):
     await message.answer("❗️ Javoblarni ushbu formatda jo'nating 👇")
-    await message.answer("1234567*abcdabcdab...cd")
+    await message.answer("1234567*abcdabcdab...cd", reply_markup=ortga_qaytish())
     await FormTekshir.check.set()  # Holatni o'rnatamiz
 
 
@@ -22,8 +25,11 @@ async def tekshirish_(message: Message):
 @dp.message_handler(state=FormTekshir.check)
 async def tekshirish_(message: Message, state: FSMContext):
     user_msg_ = message.text
+    if user_msg_ == '🔙 Ortga Qaytish':
+        await state.finish()
+        await message.answer("Blok test bo'limidasiz", reply_markup=blok_test_keyboard())
 
-    if '*' not in user_msg_:
+    elif '*' not in user_msg_:
         await message.answer("Iltimos, namunadagidek formatda jo'nating!!!")
         return
 
