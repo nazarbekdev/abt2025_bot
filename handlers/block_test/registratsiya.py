@@ -70,11 +70,11 @@ async def register_start(message: types.Message):
     req_get = requests.get(f"{url_get}{user_id}")
     if req_get.status_code == 200:
         status_date = True
-        for date in req_get.json():
-            if get_next_sunday() == date['rejalashtirilgan_vaqt'].split("⏰")[0][1:].strip():
-                status_date = False
-                user_date = date['rejalashtirilgan_vaqt']
-                await message.answer(f"Siz  {user_date}  blok test uchun ro'yxatdan o'tgansiz 😊")
+        date = req_get.json()
+        if get_next_sunday() == date['rejalashtirilgan_vaqt'].split("⏰")[0][1:].strip():
+            status_date = False
+            user_date = date['rejalashtirilgan_vaqt']
+            await message.answer(f"Siz  {user_date}  blok test uchun ro'yxatdan o'tgansiz 😊")
         if status_date:
             await RegistrationStates.ism_familiya.set()
             await message.answer("Ism va familiyangizni kiriting", reply_markup=ortga_qaytish())
