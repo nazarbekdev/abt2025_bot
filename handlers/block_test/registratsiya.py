@@ -16,13 +16,12 @@ import requests
 load_dotenv()
 
 
-# Foydalanuvchi holatini kuzatish uchun State sinfi
 class RegistrationStates(StatesGroup):
     ism_familiya = State()
     telefon_raqam = State()
     viloyat = State()
-    fan1 = State()  # 1-fan tanlash
-    fan2 = State()  # 2-fan tanlash
+    fan1 = State()
+    fan2 = State()
     rejalashtirilgan_vaqt = State()
     confirm = State()
 
@@ -47,7 +46,7 @@ def format_phone_number(phone_number):
 
     # Raqam uzunligi tekshiriladi
     if len(digits) == 12 and digits.startswith("998"):
-        # Namunadagi formatga keltirish
+        # Namunadagi formatga keltirish  # +998 90 123 45 67
         formatted = f"+998 {digits[3:5]} {digits[5:8]} {digits[8:10]} {digits[10:]}"
     else:
         raise ValueError("Noto'g'ri telefon raqami formati")
@@ -60,6 +59,8 @@ viloyatlar = ["Andijon", "Buxoro", "Jizzax", "Qashqadaryo", "Navoiy", "Namangan"
               "Surxondaryo", "Farg'ona", "Xorazm", "Toshkent", "Toshkent shahri", "Qoraqalpog'iston Respublikasi"]
 fanlar = ['Matematika', 'Fizika', 'Kimyo', 'Biologiya', 'Tarix', 'Geografiya', 'Ingliz tili', 'Ona tili va adabiyot',
           'Huquq']
+
+# 5 smenadagi test vaqtlari
 vaqt_intervallari = ['08:00 - 11:00', '10:00 - 13:00', '14:00 - 17:00', '18:00 - 21:00', '20:00 - 23:00']
 
 
@@ -155,10 +156,9 @@ async def show_subject_selection(message: types.Message, state: FSMContext, fan_
 @dp.callback_query_handler(state=RegistrationStates.fan1)
 async def get_fan1(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(fan1=call.data)
-    await call.message.edit_reply_markup(reply_markup=None)  # Tugmalarni olib tashlash
-    await call.message.delete()  # Eski xabarni o‘chirish
+    await call.message.edit_reply_markup(reply_markup=None)
+    await call.message.delete()
 
-    # Endi 2-fanni tanlashga o'tamiz
     await RegistrationStates.fan2.set()
     await show_subject_selection(call.message, state, "2-fan")
 
@@ -166,10 +166,9 @@ async def get_fan1(call: types.CallbackQuery, state: FSMContext):
 @dp.callback_query_handler(state=RegistrationStates.fan2)
 async def get_fan2(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(fan2=call.data)
-    await call.message.edit_reply_markup(reply_markup=None)  # Tugmalarni olib tashlash
-    await call.message.delete()  # Eski xabarni o‘chirish
+    await call.message.edit_reply_markup(reply_markup=None)
+    await call.message.delete()
 
-    # Vaqtni tanlashga o'tamiz
     await show_time_selection(call.message, state)
 
 
@@ -185,8 +184,8 @@ async def show_time_selection(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(state=RegistrationStates.rejalashtirilgan_vaqt)
 async def get_schedule(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(rejalashtirilgan_vaqt=call.data)
-    await call.message.edit_reply_markup(reply_markup=None)  # Tugmalarni olib tashlash
-    await call.message.delete()  # Eski xabarni o‘chirish
+    await call.message.edit_reply_markup(reply_markup=None)
+    await call.message.delete()
 
     user_data = await state.get_data()
     summary = f"""📋 Sizning ma’lumotlaringiz\n
@@ -224,7 +223,9 @@ async def confirm_registration(call: types.CallbackQuery, state: FSMContext):
         await call.message.delete()
         await call.message.answer("✅ Siz muvaffaqiyatli ro‘yxatdan o‘tdingiz!", reply_markup=main_keyboard())
         await call.message.answer(
-            f"Sizga {get_next_sunday()} kuni soat {user_data['rejalashtirilgan_vaqt'][:5]} da test materiallari yuboriladi, belgilangan vaqt ichida javoblarni yuborishingizni so'rab qolamiz!\nIlmiz ziyoda bo'lsin!")
+            f"Sizga {get_next_sunday()} kuni soat {user_data['rejalashtirilgan_vaqt'][:5]} da "
+            f"test materiallari yuboriladi, belgilangan vaqt ichida javoblarni yuborishingizni so'rab qolamiz!\n"
+            f"Ilmingiz ziyoda bo'lsin!")
     else:
         await call.message.edit_reply_markup(reply_markup=None)
         await call.message.delete()

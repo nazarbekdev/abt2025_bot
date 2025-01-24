@@ -1,9 +1,13 @@
 from aiogram import executor
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from loader import dp
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
-import handlers
-from handlers.block_test.avto_test_yuborish import scheduler, setup_scheduled_notifications  # Schedulerni import qilamiz
+from handlers.block_test.avto_test_yuborish import setup_scheduled_notifications
+from handlers.block_test.testni_tekshirish import schedule_shifts
+
+scheduler = AsyncIOScheduler()
+scheduler.configure(timezone="Asia/Tashkent")
 
 
 async def on_startup(dispatcher):
@@ -14,9 +18,9 @@ async def on_startup(dispatcher):
     await on_startup_notify(dispatcher)
 
     # Schedulerni boshlash
-    print("Scheduler ishga tushmoqda...")
-    setup_scheduled_notifications()
-    scheduler.start()
+    setup_scheduled_notifications(scheduler)  # avto test yuborish
+    schedule_shifts(scheduler)  # test holatini tekshirish
+    scheduler.start()  # schedule ga run berish
 
 
 if __name__ == '__main__':
