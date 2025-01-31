@@ -4,6 +4,9 @@ import io
 import requests
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+
+from keyboards.button.test_buyurtma_kyb import test_buyurtma_keyboard
+from keyboards.button.test_tekshir_ortga_qaytish import ortga_qaytish
 from loader import dp, bot
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from dotenv import load_dotenv
@@ -63,8 +66,15 @@ class TestBuyurtmaState(StatesGroup):
     tasdiqlash = State()
 
 
+@dp.message_handler(lambda message: message.text == "🔙 Ortga Qaytish", state="*")
+async def cancel_and_restart(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer("Test yechish bo'limidasiz", reply_markup=test_buyurtma_keyboard())
+
+
 @dp.message_handler(lambda message: message.text == "📝 Test Buyurtma")
 async def start_test_buyurtma(message: types.Message):
+    await message.answer('Test buyutma qilishda ketma-ketligiga amal qiling!', reply_markup=ortga_qaytish())
     await message.answer("O'z sohangizni tanlang!", reply_markup=fanlar_inline_keyboard())
     await TestBuyurtmaState.soha.set()
 

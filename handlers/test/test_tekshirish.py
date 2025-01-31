@@ -8,6 +8,9 @@ import requests
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
+
+from keyboards.button.test_buyurtma_kyb import test_buyurtma_keyboard
+from keyboards.button.test_tekshir_ortga_qaytish import ortga_qaytish
 from loader import dp, bot
 from keyboards.inline import tekshirish_usullari
 
@@ -111,7 +114,7 @@ class Form(StatesGroup):
 async def tekshirish_oddiy(call: CallbackQuery):
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.answer("❗️ Javoblarni ushbu formatda jo'nating 👇")
-    await call.message.answer("1234567*abcdabcdab...cd")
+    await call.message.answer("1234567*abcdabcdab...cd", reply_markup=ortga_qaytish())
     await Form.tekshirish_oddiy.set()  # Holatni o'rnatamiz
     await call.answer()
 
@@ -120,18 +123,23 @@ async def tekshirish_oddiy(call: CallbackQuery):
 @dp.message_handler(state=Form.tekshirish_oddiy)
 async def tekshirish(message: Message, state: FSMContext):
     user_msg = message.text
-
-    if '*' in user_msg:
+    if user_msg == '🔙 Ortga Qaytish':
+        await message.answer("Test yechish bo'limidasiz", reply_markup=test_buyurtma_keyboard())
+        await state.finish()
+        return
+    elif '*' in user_msg:
         book_id = user_msg.split('*')[0]
         user_keys = user_msg.split('*')[1].upper()
+        if len(book_id) != 7:
+            await message.answer('Kitob ID 7 xonadan iborat bo\'lishi kerak!')
+            await state.finish()
+            return
+        if len(user_keys) != 90:
+            await message.answer('Javoblar kaliti 90 tadan iborat bo\'lishi kerak!')
+            await state.finish()
+            return
     else:
         await message.answer("Iltimos, namunadagidek formatda jo'nating!!!")
-    if len(book_id) != 7:
-        await message.answer('Kitob ID 7 xonadan iborat bo\'lishi kerak!')
-        await state.finish()
-    if len(user_keys) != 90:
-        await message.answer('Javoblar kaliti 90 tadan iborat bo\'lishi kerak!')
-        await state.finish()
 
     url_ans_data = os.getenv("ANSWER_DATA")
     data = requests.get(f'{url_ans_data}{book_id}')
