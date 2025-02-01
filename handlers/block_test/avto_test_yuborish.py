@@ -1,5 +1,4 @@
 import random
-
 import requests
 import os
 import io
@@ -63,15 +62,24 @@ async def send_message_user(telegram_id, message, fan1, fan2):
                     caption="❗️Diqqat. Rejalashtirilgan vaqt ichida javoblarni yuboring!\n\n© 2024 TestifyHub")
                 user_status_updt = os.getenv('BLOK_TEST_PATCH')
                 r = requests.patch(f"{user_status_updt}{telegram_id}", data={'status': 'yechmoqda'})
+                if r.status_code == 200:
+                    await bot.send_message(chat_id=5605407368,
+                                           text=f"✅ Muvaffaqiyatli test materiallari yuborildi va foydalanuvchi testlarni yechmoqda\n\nChat id: {telegram_id}\nStatus kod: {r.status_code}")
+                else:
+                    await bot.send_message(chat_id=5605407368,
+                                           text=f"⚠️ STATUS O'ZGARMADI\n\nChat id: {telegram_id}\nStatus kod: {r.status_code}")
+
                 print('patch status:', r.status_code)
                 print(r.json())
             else:
                 await bot.send_message(chat_id=telegram_id, text="Qandaydir xatolik bo'ldi... 🤷‍♂️")
+                await bot.send_message(chat_id=5605407368,
+                                       text=f"⚠️ Fayl yuborilmadi\n\nChat id: {telegram_id}\nStatus kod: {req_file.status_code}")
         else:
             print('test yuklash status: ', req.status_code)
             await bot.send_message(chat_id=telegram_id,
                                    text="Test yuklashda nimadur xato ketdi, xatolikni bartaraf etish uchun adminga xabar yuborildi!")
-            await bot.send_message(chat_id=5605407368, text=f"Test yuborilmadi...\n\n{get_data}")
+            await bot.send_message(chat_id=5605407368, text=f"Test yuborilmadi...\n\n{get_data}\nStatus kod: {req.status_code}")
     except Exception as e:
         print(f"Xatolik yuz berdi: {e}")
 
@@ -116,12 +124,13 @@ async def schedule_notifications(scheduler):
 
 # Har yakshanba va belgilangan vaqtlarda rejalashtirish
 def setup_scheduled_notifications(scheduler):
-    trigger = CronTrigger(day_of_week='sun', hour=8, minute=0)
-    scheduler.add_job(schedule_notifications, trigger, args=[scheduler])
-
     for hour in [8, 10, 14, 18, 20]:
-        scheduler.add_job(schedule_notifications, CronTrigger(day_of_week='sun', hour=hour, minute=0), args=[scheduler])
-
+        scheduler.add_job(
+            schedule_notifications,
+            CronTrigger(day_of_week='sun', hour=hour, minute=0),
+            args=[scheduler],
+            executor='asyncio'
+        )
 
 # #                           ### Test uchun sinov ###
 # def setup_scheduled_notifications(scheduler):

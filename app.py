@@ -6,8 +6,7 @@ from utils.set_bot_commands import set_default_commands
 from handlers.block_test.avto_test_yuborish import setup_scheduled_notifications
 from handlers.block_test.testni_tekshirish import schedule_shifts
 
-scheduler = AsyncIOScheduler()
-scheduler.configure(timezone="Asia/Tashkent")
+scheduler = AsyncIOScheduler(timezone="Asia/Tashkent")
 
 
 async def on_startup(dispatcher):
