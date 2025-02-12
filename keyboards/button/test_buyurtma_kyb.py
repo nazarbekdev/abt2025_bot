@@ -11,9 +11,6 @@ def test_buyurtma_keyboard():
     keyboard.add(KeyboardButton("📊 Test Tahlili"), KeyboardButton("❓ Savolda Xatolik"))
 
     # Uchinchi qator
-    keyboard.add(KeyboardButton("💰 Balans"), KeyboardButton("🤝 Do'stlarni Taklif Qilish"))
-
-    # To‘rtinchi qator
     keyboard.add(KeyboardButton("🔙 Ortga Qaytish"))
 
     return keyboard

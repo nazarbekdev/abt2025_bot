@@ -23,6 +23,10 @@ def is_within_interval(test_time, start, end):
 
 
 @dp.message_handler(lambda message: message.text == "📝 Testni tekshirish")
+async def check_sheet(message: Message):
+    await message.answer(f'<b>Sizning telegram ID:</b> {message.from_user.id}\n\n<b>🔗 Test tekshirish uchun havola 👇</b>\nhttps://testifyhub-uz-test-tekshirish.netlify.app', parse_mode='HTML')
+
+@dp.message_handler(lambda message: message.text == "📝 Testni")
 async def tekshirish_(message: Message):
     user_id = message.from_user.id
     url = os.getenv('BLOK_TEST_GET')

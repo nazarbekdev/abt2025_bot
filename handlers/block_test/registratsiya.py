@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from keyboards.button.blok_test import blok_test_keyboard
 from keyboards.button.test_tekshir_ortga_qaytish import ortga_qaytish
 from loader import dp
+from keyboards.inline.dostlarni_taklif_qilish import taklif_qilish
 from keyboards.button.main_kyb import main_keyboard
 import os
 import re
@@ -101,7 +102,7 @@ async def get_name(message: types.Message, state: FSMContext):
 
         # Telefon raqami so'rovi
         await message.answer(
-            "Telefon raqamingizni kiriting: (+998 XX XXX XX XX) yoki quyidagi tugma orqali yuboring.",
+            "Telefon raqamingizni kiriting: +998 90 123 45 67 yoki quyidagi tugma orqali yuboring.",
             reply_markup=keyboard
         )
 
@@ -208,30 +209,45 @@ async def get_schedule(call: types.CallbackQuery, state: FSMContext):
 async def confirm_registration(call: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     user_id = call.from_user.id
-    phone_number = format_phone_number(user_data['telefon_raqam'])
-    url_post = os.getenv('BLOK_TEST_POST')
-    req = requests.post(url_post, data={"telegram_id": user_id,
-                                        "ism_familiya": user_data['ism_familiya'],
-                                        "telefon_raqam": phone_number,
-                                        "viloyat": user_data['viloyat'],
-                                        "fan1": user_data['fan1'],
-                                        "fan2": user_data['fan2'],
-                                        "rejalashtirilgan_vaqt": f"📅 {get_next_sunday()} ⏰ {user_data['rejalashtirilgan_vaqt']}",
-                                        "status": "kutmoqda"})
-    if req.status_code == 200:
-        await call.message.edit_reply_markup(reply_markup=None)
-        await call.message.delete()
-        await call.message.answer("✅ Siz muvaffaqiyatli ro‘yxatdan o‘tdingiz!", reply_markup=main_keyboard())
-        await call.message.answer(
-            f"Sizga {get_next_sunday()} kuni soat {user_data['rejalashtirilgan_vaqt'][:5]} da "
-            f"test materiallari yuboriladi, belgilangan vaqt ichida javoblarni yuborishingizni so'rab qolamiz!\n"
-            f"Ilmingiz ziyoda bo'lsin!")
-    else:
-        await call.message.edit_reply_markup(reply_markup=None)
-        await call.message.delete()
-        await call.message.answer("Ro'yxatdan o'tishda xatolik")
-    await state.finish()
 
+    user_balans = os.getenv("USER_INFO")
+    req_user = requests.get(f"{user_balans}{user_id}")
+    balans_ = req_user.json()['balans']
+
+    if int(balans_) >= 5000:
+        patch_user = os.getenv("USER_PATCH")
+        req_patch = requests.patch(f"{patch_user}{user_id}", data={'balans': int(balans_)-5000})
+
+        phone_number = format_phone_number(user_data['telefon_raqam'])
+        url_post = os.getenv('BLOK_TEST_POST')
+        req = requests.post(url_post, data={"telegram_id": user_id,
+                                            "ism_familiya": user_data['ism_familiya'],
+                                            "telefon_raqam": phone_number,
+                                            "viloyat": user_data['viloyat'],
+                                            "fan1": user_data['fan1'],
+                                            "fan2": user_data['fan2'],
+                                            "rejalashtirilgan_vaqt": f"📅 {get_next_sunday()} ⏰ {user_data['rejalashtirilgan_vaqt']}",
+                                            "status": "kutmoqda"})
+        if req.status_code == 200:
+            await call.message.edit_reply_markup(reply_markup=None)
+            await call.message.delete()
+            await call.message.answer("✅ Siz muvaffaqiyatli ro‘yxatdan o‘tdingiz!", reply_markup=main_keyboard())
+            await call.message.answer(
+                f"Sizga {get_next_sunday()} kuni soat {user_data['rejalashtirilgan_vaqt'][:5]} da "
+                f"test materiallari yuboriladi, belgilangan vaqt ichida javoblarni yuborishingizni so'rab qolamiz!\n"
+                f"Ilmingiz ziyoda bo'lsin!")
+        else:
+            await call.message.edit_reply_markup(reply_markup=None)
+            await call.message.delete()
+            await call.message.answer("Ro'yxatdan o'tishda xatolik")
+        await state.finish()
+    else:
+        referal_link = f"https://t.me/abt2025_bot?start={user_id}"
+        await call.message.edit_reply_markup(reply_markup=None)
+        await call.message.delete()
+        await call.message.answer("😩 Sizda yetarlicha balans mavjud emas!\n✅ Blok testda ishtirok etish 5`000 so'm\n💰 Hisobingizni to'ldiring va davom eting!", reply_markup=main_keyboard())
+        await call.message.answer("🔗 Do'stlarni taklif qilish orqali ham balansizgizni to'ldirib olishingiz mumkin, 10 ta taklif etish blok testda ishtirok etish uchun yetarli!", reply_markup=taklif_qilish(referal_link))
+        await state.finish()
 
 @dp.callback_query_handler(lambda c: c.data == 'cancel_', state=RegistrationStates.confirm)
 async def cancel_registration(call: types.CallbackQuery, state: FSMContext):

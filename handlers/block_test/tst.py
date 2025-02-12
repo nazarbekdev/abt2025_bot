@@ -12,6 +12,8 @@ from aiogram import types
 # Avtomatik xabar yuboruvchi funksiya
 async def send_message_user(telegram_id, message, fan1, fan2):
     try:
+        print('Fan1:', fan1)
+        print('Fan2:', fan2)
         if fan1 == "Huquq" or fan2 == "Huquq":
             baza = 2
         else:
@@ -24,7 +26,7 @@ async def send_message_user(telegram_id, message, fan1, fan2):
             "Ona tili va adabiyot": 9,
             "Ingliz tili": 11,
             "Tarix": 5,
-            "Geografiya": 10,
+            "Geografia": 10,
             "Huquq": 12
         }
 
@@ -58,8 +60,10 @@ async def send_message_user(telegram_id, message, fan1, fan2):
                     chat_id=telegram_id,
                     document=types.InputFile(io.BytesIO(file_content), filename=file_name),
                     caption="❗️Diqqat. Rejalashtirilgan vaqt ichida javoblarni yuboring!\n\n© 2024 TestifyHub")
+
                 user_status_updt = os.getenv('BLOK_TEST_PATCH')
                 r = requests.patch(f"{user_status_updt}{telegram_id}", data={'status': 'yechmoqda'})
+
                 if r.status_code == 200:
                     await bot.send_message(chat_id=5605407368,
                                            text=f"✅ Muvaffaqiyatli test materiallari yuborildi va foydalanuvchi testlarni yechmoqda\n\nChat id: {telegram_id}\nStatus kod: {r.status_code}")
@@ -67,6 +71,8 @@ async def send_message_user(telegram_id, message, fan1, fan2):
                     await bot.send_message(chat_id=5605407368,
                                            text=f"⚠️ STATUS O'ZGARMADI\n\nChat id: {telegram_id}\nStatus kod: {r.status_code}")
 
+                print('patch status:', r.status_code)
+                print(r.json())
             else:
                 await bot.send_message(chat_id=telegram_id, text="Qandaydir xatolik bo'ldi... 🤷‍♂️")
                 await bot.send_message(chat_id=5605407368,
@@ -75,7 +81,8 @@ async def send_message_user(telegram_id, message, fan1, fan2):
             print('test yuklash status: ', req.status_code)
             await bot.send_message(chat_id=telegram_id,
                                    text="Test yuklashda nimadur xato ketdi, xatolikni bartaraf etish uchun adminga xabar yuborildi!")
-            await bot.send_message(chat_id=5605407368, text=f"Test yuborilmadi...\n\n{get_data}\nStatus kod: {req.status_code}")
+            await bot.send_message(chat_id=5605407368,
+                                   text=f"Test yuborilmadi...\n\n{get_data}\nStatus kod: {req.status_code}")
     except Exception as e:
         print(f"Xatolik yuz berdi: {e}")
 
@@ -86,8 +93,8 @@ async def schedule_notifications(scheduler):
         response = requests.get(os.getenv('BLOK_TEST_ALL'))
         response.raise_for_status()
         data = response.json()
-        today_date = datetime.now().strftime("%d.%m.%y")
 
+        today_date = datetime.now().strftime("%d.%m.%y")
         for item in data:
             # Bugungi sanani tekshirish
             if today_date in item["rejalashtirilgan_vaqt"]:
@@ -111,8 +118,7 @@ async def schedule_notifications(scheduler):
                     send_message_user,
                     'date',
                     run_date=full_datetime,
-                    args=[telegram_id, message, blok1, blok2],
-                    misfire_grace_time=300
+                    args=[telegram_id, message, blok1, blok2]
                 )
 
     except requests.exceptions.RequestException as e:
@@ -120,21 +126,11 @@ async def schedule_notifications(scheduler):
 
 
 # Har yakshanba va belgilangan vaqtlarda rejalashtirish
-def setup_scheduled_notifications(scheduler):
+async def setup_scheduled_notifications(scheduler):
     for hour in [8, 10, 14, 18, 20]:
         scheduler.add_job(
-            schedule_notifications, 
-            CronTrigger(hour=hour, minute=0),
-            args=[scheduler]
+            schedule_notifications,
+            CronTrigger(day_of_week='sun', hour=hour, minute=0),
+            args=[scheduler],
+            executor='asyncio'
         )
-
-
-# #                           ### Test uchun sinov ###
-# def setup_scheduled_notifications(scheduler):
-#     # Haftaning chorshanba kuni uchun trigger
-#     trigger = CronTrigger(day_of_week='thu', hour=12, minute=0)  # Har chorshanba 12:00 PM
-#     scheduler.add_job(schedule_notifications, trigger, args=[scheduler])
-#
-#     # PM vaqtlari uchun: 12:00, 14:00, 16:00, 18:00, 20:00
-#     for minut in [37, 21, 27, 18, 56]:
-#         scheduler.add_job(schedule_notifications, CronTrigger(day_of_week='thu', hour=19, minute=minut), args=[scheduler])
