@@ -80,7 +80,7 @@ async def bot_start(message: types.Message):
         ))
 
         await message.answer(
-            "Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling:",
+            "Asosiy yangiliklarni kuzatib borish uchun kanalga a'zo bo'ling!",
             reply_markup=check_sub_markup,
             disable_web_page_preview=True
         )
