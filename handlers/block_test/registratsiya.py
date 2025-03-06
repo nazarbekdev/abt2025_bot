@@ -235,7 +235,7 @@ async def confirm_registration(call: types.CallbackQuery, state: FSMContext):
             await call.message.answer(
                 f"Sizga {get_next_sunday()} kuni soat {user_data['rejalashtirilgan_vaqt'][:5]} da "
                 f"test materiallari yuboriladi, belgilangan vaqt ichida javoblarni yuborishingizni so'rab qolamiz!\n"
-                f"Ilmingiz ziyoda bo'lsin!")
+                f"Ilmingiz ziyoda bo'lsin!", parse_mode="HTML")
         else:
             await call.message.edit_reply_markup(reply_markup=None)
             await call.message.delete()
