@@ -58,6 +58,8 @@ async def send_message_user(telegram_id, message, fan1, fan2):
                     chat_id=telegram_id,
                     document=types.InputFile(io.BytesIO(file_content), filename=file_name),
                     caption="❗️Diqqat. Rejalashtirilgan vaqt ichida javoblarni yuboring!\n\n© 2024 TestifyHub")
+                await bot.send_message(chat_id=telegram_id, text="🔑 Test javoblarini yuborish boʻyicha qoʻllanma bilan tanishib chiqing!\n\n📹 Vidoe qoʻllanma: 👉 https://youtu.be/0Z_AEHM1AWc")
+
                 user_status_updt = os.getenv('BLOK_TEST_PATCH')
                 r = requests.patch(f"{user_status_updt}{telegram_id}", data={'status': 'yechmoqda'})
                 if r.status_code == 200:

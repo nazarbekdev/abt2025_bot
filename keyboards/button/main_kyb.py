@@ -5,11 +5,13 @@ def main_keyboard():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 
     #Blok test
-    keyboard.add(KeyboardButton("📋 Blok test"))
+    keyboard.add(KeyboardButton("📋 Blok test"), KeyboardButton("⚡ Quiz"))
+    
 
     # Birinchi qator
     keyboard.add(KeyboardButton("✍️ Test Yechish"), KeyboardButton("❓ Savol Yuborish"))
-
+    # Quiz test
+    # keyboard.add(KeyboardButton("⚡ Quiz"))
     # Ikkinchi qator
     keyboard.add(KeyboardButton("🏛️ Kvotalar"), KeyboardButton("🧑‍🎓 Yo'nalishlar"))
 

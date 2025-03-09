@@ -5,6 +5,7 @@ from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
 from handlers.block_test.avto_test_yuborish import setup_scheduled_notifications
 from handlers.block_test.testni_tekshirish import schedule_shifts
+from handlers.quiz.handlers import register_handlers
 
 scheduler = AsyncIOScheduler(timezone="Asia/Tashkent")
 
@@ -20,7 +21,9 @@ async def on_startup(dispatcher):
     setup_scheduled_notifications(scheduler)  # avto test yuborish
     schedule_shifts(scheduler)  # test holatini tekshirish
     scheduler.start()  # schedule ga run berish
-
+    
+    # Quiz handlerlarini ro‘yxatdan o‘tkazish
+    register_handlers(dispatcher)
 
 if __name__ == '__main__':
     executor.start_polling(dp, on_startup=on_startup)
