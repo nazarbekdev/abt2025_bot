@@ -102,7 +102,7 @@ async def get_name(message: types.Message, state: FSMContext):
 
         # Telefon raqami so'rovi
         await message.answer(
-            "Telefon raqamingizni kiriting: +998 90 123 45 67 yoki quyidagi tugma orqali yuboring.",
+            "<b>Telefon raqamingizni kiriting</b>\nMisol uchun: +998 90 123 45 67\n\nYoki pastdagi tugmani bosish orqali raqamingizni yuboring", parse_mode="HTML",
             reply_markup=keyboard
         )
 
@@ -147,9 +147,18 @@ async def get_region(call: types.CallbackQuery, state: FSMContext):
 
 
 async def show_subject_selection(message: types.Message, state: FSMContext, fan_number: str):
+    user_data = await state.get_data()
     inline_fanlar = InlineKeyboardMarkup(row_width=2)
+    
+    # Tanlangan 1-fanni olish
+    selected_fan1 = user_data.get('fan1')
+    
     for fan in fanlar:
-        inline_fanlar.insert(InlineKeyboardButton(fan, callback_data=fan))
+        if fan_number == "2-fan" and fan == selected_fan1:
+            # 2-fan tanlashda 1-fan oldida ✅ belgisi bilan ko‘rinadi, lekin tanlanmaydi
+            inline_fanlar.insert(InlineKeyboardButton(f"{fan} ✅", callback_data="already_selected"))
+        else:
+            inline_fanlar.insert(InlineKeyboardButton(fan, callback_data=fan))
 
     await message.answer(f"{fan_number}ni tanlang", reply_markup=inline_fanlar)
 
@@ -166,6 +175,11 @@ async def get_fan1(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=RegistrationStates.fan2)
 async def get_fan2(call: types.CallbackQuery, state: FSMContext):
+    if call.data == "already_selected":
+        # Agar 1-fan tanlansa, hech qanday harakat qilmaymiz va xabar chiqaramiz
+        await call.answer("Bu fan allaqachon 1-fan sifatida tanlangan!", show_alert=True)
+        return
+    
     await state.update_data(fan2=call.data)
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.delete()
